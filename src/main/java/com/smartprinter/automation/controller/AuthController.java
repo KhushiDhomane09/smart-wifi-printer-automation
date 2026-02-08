@@ -1,0 +1,29 @@
+package com.smartprinter.automation.controller;
+
+import com.smartprinter.automation.dto.AuthResponse;
+import com.smartprinter.automation.dto.LoginRequest;
+import com.smartprinter.automation.dto.RegisterRequest;
+import com.smartprinter.automation.service.AuthService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin("*")
+public class AuthController {
+
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @PostMapping("/register")
+    public AuthResponse register(@RequestBody RegisterRequest request) {
+        return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@RequestBody LoginRequest request) {
+        return authService.login(request);
+    }
+}
