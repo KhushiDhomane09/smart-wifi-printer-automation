@@ -5,10 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "printers")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Printer {
 
@@ -16,11 +14,15 @@ public class Printer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable=false)
     private String printerName;
 
+    @Column(nullable=false)
     private String ipAddress;
 
-    private int port;
+    @Column(nullable=false)
+    private Integer port;   // default 9100
 
-    private String protocol;  // RAW / IPP
+    @Column(nullable=false)
+    private String protocol; // "RAW" (start with this)
 }
