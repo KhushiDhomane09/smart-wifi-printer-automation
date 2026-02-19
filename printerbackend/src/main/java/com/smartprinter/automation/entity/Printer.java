@@ -15,14 +15,17 @@ public class Printer {
     private Long id;
 
     @Column(nullable=false)
-    private String printerName;
+    private String printerName;   // e.g. "Brother DCP-T520W"
 
     @Column(nullable=false)
-    private String ipAddress;
+    private String ipAddress;     // e.g. "192.168.1.50"
 
     @Column(nullable=false)
-    private Integer port;   // default 9100
+    private Integer port;         // usually 9100
 
     @Column(nullable=false)
-    private String protocol; // "RAW" (start with this)
+    private String protocol;      // "RAW9100"
+
+    @Column(nullable=false)
+    private Boolean active;       // true
 }

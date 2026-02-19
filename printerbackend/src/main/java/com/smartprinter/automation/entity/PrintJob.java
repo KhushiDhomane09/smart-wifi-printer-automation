@@ -14,14 +14,13 @@ public class PrintJob {
     private Long id;
 
     private Long printerId;
-
     private String fileName;
-
     private String contentType;
 
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] fileData;
 
-    private String status; // PENDING, PRINTING, COMPLETED, FAILED
+    private String status;       // PENDING, PRINTING, COMPLETED, FAILED
+    private String errorMessage; // optional
 }

@@ -1,10 +1,10 @@
 package com.smartprinter.automation.controller;
 
+import com.smartprinter.automation.entity.PrintJob;
+import com.smartprinter.automation.repository.PrintJobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.smartprinter.automation.entity.PrintJob;
-import com.smartprinter.automation.service.PrintJobService;
 
 import java.util.List;
 
@@ -13,29 +13,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PrintJobController {
 
-    private final PrintJobService service;
+    private final PrintJobRepository repo;
 
     @PostMapping
-    public PrintJob uploadFile(
-            @RequestParam Long printerId,
-            @RequestParam MultipartFile file) throws Exception {
+    public PrintJob upload(@RequestParam Long printerId,
+                           @RequestParam MultipartFile file) throws Exception {
 
         PrintJob job = new PrintJob();
         job.setPrinterId(printerId);
         job.setFileName(file.getOriginalFilename());
         job.setContentType(file.getContentType());
         job.setFileData(file.getBytes());
+        job.setStatus("PENDING");
 
-        return service.createJob(job);
+        return repo.save(job);
     }
 
     @GetMapping
-    public List<PrintJob> getAll() {
-        return service.getAllJobs();
-    }
-
-    @GetMapping("/{id}")
-    public PrintJob getJob(@PathVariable Long id) {
-        return service.getJob(id);
+    public List<PrintJob> all() {
+        return repo.findAll();
     }
 }

@@ -19,14 +19,18 @@ public class PrinterService {
     private final PrinterRepository printerRepository;
 
     public PrinterResponse addPrinter(PrinterRequest req) {
+
         int port = (req.getPort() == null) ? 9100 : req.getPort();
-        String protocol = (req.getProtocol() == null || req.getProtocol().isBlank()) ? "RAW" : req.getProtocol();
+        String protocol = (req.getProtocol() == null || req.getProtocol().isBlank())
+                ? "RAW9100"
+                : req.getProtocol();
 
         Printer p = Printer.builder()
                 .printerName(req.getPrinterName())
                 .ipAddress(req.getIpAddress())
                 .port(port)
                 .protocol(protocol)
+                .active(true)              //  FIX: default active true
                 .build();
 
         Printer saved = printerRepository.save(p);
@@ -34,10 +38,14 @@ public class PrinterService {
     }
 
     public List<PrinterResponse> getAll() {
-        return printerRepository.findAll().stream().map(this::toResponse).toList();
+        return printerRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public PrinterResponse update(Long id, PrinterRequest req) {
+
         Printer p = printerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Printer not found: " + id));
 
@@ -45,6 +53,9 @@ public class PrinterService {
         if (req.getIpAddress() != null) p.setIpAddress(req.getIpAddress());
         if (req.getPort() != null) p.setPort(req.getPort());
         if (req.getProtocol() != null) p.setProtocol(req.getProtocol());
+
+        //  safety: update pe bhi active null na ho
+        if (p.getActive() == null) p.setActive(true);
 
         return toResponse(printerRepository.save(p));
     }
@@ -57,10 +68,10 @@ public class PrinterService {
     }
 
     public String checkStatus(Long id) {
+
         Printer p = printerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Printer not found: " + id));
 
-        // Socket connect try
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(p.getIpAddress(), p.getPort()), 1500);
             return "ONLINE";

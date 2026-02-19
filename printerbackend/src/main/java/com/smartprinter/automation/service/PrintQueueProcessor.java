@@ -1,10 +1,13 @@
 package com.smartprinter.automation.service;
 
+import com.smartprinter.automation.entity.PrintJob;
+import com.smartprinter.automation.entity.Printer;
+import com.smartprinter.automation.repository.PrintJobRepository;
+import com.smartprinter.automation.repository.PrinterRepository;
+import com.smartprinter.automation.service.printer.Raw9100PrinterClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.smartprinter.automation.entity.PrintJob;
-import com.smartprinter.automation.repository.PrintJobRepository;
 
 import java.util.List;
 
@@ -12,27 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PrintQueueProcessor {
 
-    private final PrintJobRepository repository;
+    private final PrintJobRepository jobRepo;
+    private final PrinterRepository printerRepo;
+    private final Raw9100PrinterClient rawClient;
 
-    @Scheduled(fixedDelay = 5000) // every 5 seconds
+    @Scheduled(fixedDelay = 5000)
     public void processQueue() {
 
-        List<PrintJob> pendingJobs = repository.findByStatus("PENDING");
+        List<PrintJob> pendingJobs = jobRepo.findByStatus("PENDING");
 
         for (PrintJob job : pendingJobs) {
             try {
                 job.setStatus("PRINTING");
-                repository.save(job);
+                job.setErrorMessage(null);
+                jobRepo.save(job);
 
-                // Simulate printing (Module 6 me real printing hoga)
-                Thread.sleep(2000);
+                Printer printer = printerRepo.findById(job.getPrinterId())
+                        .orElseThrow(() -> new RuntimeException("Printer not found"));
+
+                if (printer.getActive() != null && !printer.getActive()) {
+                    throw new RuntimeException("Printer inactive");
+                }
+
+                // REAL WiFi RAW print
+                rawClient.print(printer, job.getFileData());
 
                 job.setStatus("COMPLETED");
-                repository.save(job);
+                jobRepo.save(job);
 
             } catch (Exception e) {
                 job.setStatus("FAILED");
-                repository.save(job);
+                job.setErrorMessage(e.getMessage());
+                jobRepo.save(job);
             }
         }
     }
